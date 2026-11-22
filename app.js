@@ -407,12 +407,24 @@ function addWhyItem(list, fired, label, quotes, extra) {
   list.append(li);
 }
 
+function autoResizePrompt() {
+  const p = $("prompt");
+  if (!p) return;
+  p.style.height = "auto";
+  const newHeight = Math.min(Math.max(p.scrollHeight, 70), 400);
+  p.style.height = newHeight + "px";
+  p.style.overflowY = p.scrollHeight > 400 ? "auto" : "hidden";
+}
+
 let analysisTimer = null;
 function schedulePromptAnalysis() {
   clearTimeout(analysisTimer);
   analysisTimer = setTimeout(renderPromptAnalysis, 300);   // run 300ms after typing stops
 }
-$("prompt").addEventListener("input", schedulePromptAnalysis);
+$("prompt").addEventListener("input", () => {
+  autoResizePrompt();
+  schedulePromptAnalysis();
+});
 
 /* ==================================================================
    9. SMALL MARKDOWN RENDERER
@@ -538,6 +550,7 @@ async function send() {
   addUserBubble(text);
   lastSentPrompt = text;
   $("prompt").value = "";
+  autoResizePrompt();
   schedulePromptAnalysis();
 
   const body = buildRequestBody();
@@ -1082,6 +1095,7 @@ $("resetBtn").addEventListener("click", () => {
   resetInsightPanels();
   const modeLabel = $("currentModeLabel");
   if (modeLabel) modeLabel.textContent = "Custom Mode";
+  autoResizePrompt();
 });
 
 // Clear Chat action button
@@ -1254,6 +1268,7 @@ function applyConversationMode(modeKey) {
     }
 
     $("prompt").value = mode.prompt;
+    autoResizePrompt();
     schedulePromptAnalysis();
 
     const modeLabel = $("currentModeLabel");
@@ -1370,6 +1385,7 @@ if (popover) {
    loads models if we have a key, and runs the first prompt analysis.
    ================================================================== */
 $("prompt").value = DEFAULT_PROMPT;
+autoResizePrompt();
 restoreKey();
 fillModelDropdown(FALLBACK_MODELS, true);
 $("modelsStatus").textContent = "Fallback list — paste a key to load live models";

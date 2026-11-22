@@ -1301,16 +1301,19 @@ kbd {
 
 .textarea-wrapper textarea#prompt {
   width: 100%;
-  min-height: 55px;
-  max-height: 180px;
+  min-height: 70px;
+  max-height: 400px;
   background: transparent;
   border: none;
   color: #fff;
   font-family: var(--font-sans);
-  font-size: 13.5px;
-  line-height: 1.5;
-  padding: 4px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 6px 0;
   resize: none;
+  overflow-y: hidden;
+  box-sizing: border-box;
+  transition: height 0.1s ease;
 }
 
 .textarea-wrapper textarea#prompt:focus {
