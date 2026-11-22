@@ -308,10 +308,63 @@
       <div class="composer-stage">
         <div class="composer-container">
           <div class="composer-header-row">
-            <div class="active-mode-indicator">
-              <span class="mode-dot"></span>
-              <span id="currentModeLabel">Custom Mode</span>
+            <div class="mode-menu-wrapper">
+              <button id="modeMenuToggle" type="button" class="active-mode-btn" aria-haspopup="true" aria-expanded="false" title="Switch conversation mode">
+                <span class="mode-dot"></span>
+                <span id="currentModeLabel">Custom Mode</span>
+                <svg class="mode-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+
+              <!-- Mode Selection Dropdown Menu -->
+              <div id="modeDropdownMenu" class="mode-dropdown-menu" hidden>
+                <div class="mode-menu-header">Conversation Mode Presets</div>
+
+                <button type="button" class="mode-menu-item" data-mode="creative">
+                  <span class="mode-item-icon">🎨</span>
+                  <div class="mode-item-text">
+                    <div class="mode-item-title">Creative Exploration</div>
+                    <div class="mode-item-meta">High Temp (1.2) · 600 Tokens</div>
+                  </div>
+                </button>
+
+                <button type="button" class="mode-menu-item" data-mode="practical">
+                  <span class="mode-item-icon">💼</span>
+                  <div class="mode-item-text">
+                    <div class="mode-item-title">Practical & Business</div>
+                    <div class="mode-item-meta">Balanced (0.6) · 400 Tokens</div>
+                  </div>
+                </button>
+
+                <button type="button" class="mode-menu-item" data-mode="mathematical">
+                  <span class="mode-item-icon">🧮</span>
+                  <div class="mode-item-text">
+                    <div class="mode-item-title">Mathematical & Logic</div>
+                    <div class="mode-item-meta">Low Temp (0.1) · 800 Tokens · Reasoning</div>
+                  </div>
+                </button>
+
+                <button type="button" class="mode-menu-item" data-mode="engineering">
+                  <span class="mode-item-icon">💻</span>
+                  <div class="mode-item-text">
+                    <div class="mode-item-title">Systems & Architecture</div>
+                    <div class="mode-item-meta">Deterministic (0.2) · 700 Tokens</div>
+                  </div>
+                </button>
+
+                <div class="mode-menu-divider"></div>
+
+                <button type="button" class="mode-menu-item" data-mode="custom">
+                  <span class="mode-item-icon">⚡</span>
+                  <div class="mode-item-text">
+                    <div class="mode-item-title">Custom Mode</div>
+                    <div class="mode-item-meta">Manual hyperparameter configuration</div>
+                  </div>
+                </button>
+              </div>
             </div>
+
             <div class="composer-shortcuts">
               <kbd>⌘</kbd> / <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to submit
             </div>

@@ -1210,32 +1210,68 @@ const CONVERSATION_MODES = {
   }
 };
 
-document.querySelectorAll(".mode-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const modeKey = card.dataset.mode;
-    const mode = CONVERSATION_MODES[modeKey];
-    if (mode) {
-      $("tempRange").value = mode.temp;
-      $("tempBox").value = mode.temp;
-      $("maxRange").value = mode.tokens;
-      $("maxBox").value = mode.tokens;
-      updateSliderUI();
+// Mode Menu Dropdown in Composer
+const modeMenuToggle = $("modeMenuToggle");
+const modeDropdownMenu = $("modeDropdownMenu");
 
-      const caps = getCapabilities($("model").value);
-      if (caps.reasoning === "optional") {
-        $("reasoning").checked = mode.reasoning;
-        wantsReasoning = mode.reasoning;
-      }
+if (modeMenuToggle && modeDropdownMenu) {
+  modeMenuToggle.addEventListener("click", e => {
+    e.stopPropagation();
+    const isHidden = modeDropdownMenu.hidden;
+    modeDropdownMenu.hidden = !isHidden;
+    modeMenuToggle.setAttribute("aria-expanded", String(isHidden));
+  });
 
-      $("prompt").value = mode.prompt;
-      schedulePromptAnalysis();
-
-      const modeLabel = $("currentModeLabel");
-      if (modeLabel) modeLabel.textContent = mode.label;
-
-      $("prompt").focus();
+  document.addEventListener("click", e => {
+    if (!modeDropdownMenu.hidden && !modeDropdownMenu.contains(e.target) && e.target !== modeMenuToggle && !modeMenuToggle.contains(e.target)) {
+      modeDropdownMenu.hidden = true;
+      modeMenuToggle.setAttribute("aria-expanded", "false");
     }
   });
+}
+
+function applyConversationMode(modeKey) {
+  if (modeKey === "custom") {
+    const modeLabel = $("currentModeLabel");
+    if (modeLabel) modeLabel.textContent = "Custom Mode";
+    if (modeDropdownMenu) modeDropdownMenu.hidden = true;
+    if (modeMenuToggle) modeMenuToggle.setAttribute("aria-expanded", "false");
+    return;
+  }
+
+  const mode = CONVERSATION_MODES[modeKey];
+  if (mode) {
+    $("tempRange").value = mode.temp;
+    $("tempBox").value = mode.temp;
+    $("maxRange").value = mode.tokens;
+    $("maxBox").value = mode.tokens;
+    updateSliderUI();
+
+    const caps = getCapabilities($("model").value);
+    if (caps.reasoning === "optional") {
+      $("reasoning").checked = mode.reasoning;
+      wantsReasoning = mode.reasoning;
+    }
+
+    $("prompt").value = mode.prompt;
+    schedulePromptAnalysis();
+
+    const modeLabel = $("currentModeLabel");
+    if (modeLabel) modeLabel.textContent = mode.label;
+
+    if (modeDropdownMenu) modeDropdownMenu.hidden = true;
+    if (modeMenuToggle) modeMenuToggle.setAttribute("aria-expanded", "false");
+
+    $("prompt").focus();
+  }
+}
+
+document.querySelectorAll(".mode-card").forEach(card => {
+  card.addEventListener("click", () => applyConversationMode(card.dataset.mode));
+});
+
+document.querySelectorAll(".mode-menu-item").forEach(item => {
+  item.addEventListener("click", () => applyConversationMode(item.dataset.mode));
 });
 
 // Circled (i) Info Popover Explanations
