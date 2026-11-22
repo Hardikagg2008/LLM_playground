@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER // LLM Engine & Reasoning Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- ===================== AMBIENT BACKGROUND GLOW ===================== -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- ===================== TOP NAVIGATION BAR ===================== -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">
+          <span>AETHER</span>
+          <span class="brand-tag">STUDIO</span>
+        </div>
+        <span class="brand-sub">LLM Inference & Reasoning Engine</span>
+      </div>
+    </div>
+
+    <!-- Active Model Selector in Header -->
+    <div class="header-model-deck">
+      <div class="model-picker-container">
+        <div class="model-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <div class="model-picker">
+          <select id="model" aria-label="Model"></select>
+          <span id="modelsStatus">Initializing models...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="viewCodeBtn" class="glass-btn action-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 18 22 12 16 6"/>
+          <polyline points="8 6 2 12 8 18"/>
+        </svg>
+        <span>Export Code</span>
+      </button>
+
+      <div class="connection-status">
+        <span class="live-pulse"></span>
+        <span class="live-badge">● LIVE — real API calls</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN STUDIO WORKSPACE ===================== -->
+  <main class="studio-layout">
+
+    <!-- ===================== LEFT CONTROLS DOCK ===================== -->
+    <aside class="col-params control-dock">
+      <div class="dock-header">
+        <div class="dock-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="21" x2="4" y2="14"/>
+            <line x1="4" y1="10" x2="4" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="3"/>
+            <line x1="20" y1="21" x2="20" y2="16"/>
+            <line x1="20" y1="12" x2="20" y2="3"/>
+            <line x1="1" y1="14" x2="7" y2="14"/>
+            <line x1="9" y1="8" x2="15" y2="8"/>
+            <line x1="17" y1="16" x2="23" y2="16"/>
+          </svg>
+          <span>Hyperparameters</span>
+        </div>
+        <span class="dock-badge">Groq Cloud</span>
+      </div>
+
+      <div class="dock-content">
+        <!-- API Security Card -->
+        <section class="param-card security-card">
+          <div class="card-head">
+            <label class="field" for="apiKey">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span>Groq API Key</span>
+            </label>
+            <a href="https://console.groq.com/keys" target="_blank" rel="noopener" class="mini-link">Get key ↗</a>
+          </div>
+
+          <div class="input-with-icon">
+            <input id="apiKey" type="password" placeholder="gsk_..." autocomplete="off" spellcheck="false">
+            <button id="toggleKeyVisibility" type="button" class="icon-toggle-btn" title="Toggle visibility">
+              <svg id="eyeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="key-actions-row">
+            <label class="checkbox-container">
+              <input id="rememberKey" type="checkbox">
+              <span class="checkmark"></span>
+              <span class="checkbox-label">Remember key in this tab</span>
+            </label>
+            <button id="clearKey" class="glass-btn small-btn">Clear</button>
+          </div>
+          <p class="note">Your key stays in this browser and is sent nowhere except Groq.</p>
+        </section>
+
+        <!-- Sampling Parameters -->
+        <section class="param-card">
+          <div class="card-head">
+            <label class="field" for="tempRange">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              </svg>
+              <span>Temperature</span>
+            </label>
+            <span class="param-tag" id="tempTag">Balanced</span>
+          </div>
+          <div class="slider-row">
+            <input id="tempRange" type="range" min="0" max="2" step="0.05" value="0.7">
+            <div class="number-input-wrapper">
+              <input id="tempBox" type="number" min="0" max="2" step="0.05" value="0.7">
+            </div>
+          </div>
+          <div class="quick-presets">
+            <button type="button" class="preset-pill" data-temp="0.2">0.2 Precise</button>
+            <button type="button" class="preset-pill active" data-temp="0.7">0.7 Balanced</button>
+            <button type="button" class="preset-pill" data-temp="1.2">1.2 Creative</button>
+          </div>
+        </section>
+
+        <!-- Max Token Budget -->
+        <section class="param-card">
+          <div class="card-head">
+            <label class="field" for="maxRange">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="9" x2="20" y2="9"/>
+                <line x1="4" y1="15" x2="20" y2="15"/>
+                <line x1="10" y1="3" x2="8" y2="21"/>
+                <line x1="16" y1="3" x2="14" y2="21"/>
+              </svg>
+              <span>Max Tokens</span>
+            </label>
+            <span class="param-val-pill"><span id="maxTokensPillVal">300</span> tok</span>
+          </div>
+          <div class="slider-row">
+            <input id="maxRange" type="range" min="50" max="1000" step="50" value="300">
+            <div class="number-input-wrapper">
+              <input id="maxBox" type="number" min="50" max="1000" step="50" value="300">
+            </div>
+          </div>
+          <p class="note">Free-tier accounts are capped on tokens per minute, so keep this small while exploring. On reasoning models this budget INCLUDES the thinking tokens — set it too low and you get thinking but no answer.</p>
+        </section>
+
+        <!-- Stop Sequences -->
+        <section class="param-card">
+          <label class="field" for="stopSeq">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <rect x="9" y="9" width="6" height="6"/>
+            </svg>
+            <span>Stop Sequences</span>
+          </label>
+          <input id="stopSeq" type="text" placeholder="e.g. Input:, ###">
+          <p class="note">Comma separated, at most 4. Only sent when not empty.</p>
+        </section>
+
+        <!-- Engine Tool Capabilities -->
+        <section class="param-card tools-card">
+          <div class="toggle-card">
+            <div class="toggle-info">
+              <div class="toggle-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <label class="toggle-label" for="webSearch">Web search</label>
+              </div>
+              <p class="note">Costs extra input tokens and extra seconds before the model writes a single word.</p>
+              <div id="webSearchReason" class="reason"></div>
+            </div>
+            <label class="switch-wrapper">
+              <input id="webSearch" type="checkbox" class="switch">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-divider"></div>
+
+          <div class="toggle-card">
+            <div class="toggle-info">
+              <div class="toggle-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04z"/>
+                  <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04z"/>
+                </svg>
+                <label class="toggle-label" for="reasoning">Reasoning</label>
+              </div>
+              <p class="note">Reasoning models spend tokens thinking before they answer — you pay for tokens you never see, and they count against your tokens-per-minute quota. Leave this off while you explore.</p>
+              <div id="reasoningReason" class="reason"></div>
+            </div>
+            <label class="switch-wrapper">
+              <input id="reasoning" type="checkbox" class="switch">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Session Reset Button -->
+        <button id="resetBtn" class="reset-action-btn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>Reset conversation</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===================== CENTER CHAT WORKSPACE ===================== -->
+    <section class="col-chat workspace-stage">
+      <!-- Conversation History Feed -->
+      <div id="transcript" class="chat-feed"></div>
+
+      <!-- Bottom Interactive Composer Dock -->
+      <div class="composer-dock">
+        <div class="composer-container">
+          <!-- Prompt Templates Bar -->
+          <div class="prompt-templates-bar">
+            <span class="templates-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Quick Presets:
+            </span>
+            <button type="button" class="template-chip" data-template="ner">Entity Extraction Few-Shot</button>
+            <button type="button" class="template-chip" data-template="reasoning">CoT Logic Reasoning</button>
+            <button type="button" class="template-chip" data-template="schema">Structured JSON Schema</button>
+            <button type="button" class="template-chip" data-template="architecture">Principal Architect Role</button>
+          </div>
+
+          <div class="textarea-wrapper">
+            <textarea id="prompt" spellcheck="false" aria-label="Prompt" placeholder="Type your instruction or few-shot prompt here..."></textarea>
+          </div>
+
+          <div class="composer-row">
+            <div class="composer-meta">
+              <span class="hint">
+                <kbd>Ctrl</kbd> + <kbd>Enter</kbd> (Windows/Linux) or <kbd>⌘</kbd> + <kbd>Enter</kbd> (Mac) to submit · <kbd>Esc</kbd> to stop
+              </span>
+              <span id="promptCharCount" class="char-counter">0 chars</span>
+            </div>
+            <button id="sendBtn" class="primary send-btn">
+              <span class="btn-text">Submit</span>
+              <svg class="send-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== RIGHT TELEMETRY & INSIGHT DECK ===================== -->
+    <aside class="col-insights telemetry-dock">
+      <!-- Tabbed Header for Insights -->
+      <div class="telemetry-tabs">
+        <button type="button" class="tab-btn active" data-tab="tab-analysis">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Analysis</span>
+        </button>
+        <button type="button" class="tab-btn" data-tab="tab-telemetry">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          <span>Metrics</span>
+        </button>
+      </div>
+
+      <div class="telemetry-content">
+        <!-- PANEL 1: PROMPT ANALYSIS -->
+        <div id="tab-analysis" class="tab-pane active">
+          <div class="panel glass-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <h2>Prompt analysis</h2>
+              </div>
+              <span id="verdict" class="verdict">ZERO-SHOT</span>
+            </div>
+
+            <p id="analysisSource" class="note source-note"></p>
+
+            <div class="chips-container">
+              <div class="chips-label">Detected Techniques</div>
+              <div id="chips" class="chips"></div>
+            </div>
+
+            <div class="rule-explanation-box">
+              <div class="rule-rule-head">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Detection Diagnostics</span>
+              </div>
+              <p class="note rule-note">Example count = the largest count from any single rule (rules overlap, so they are never added up).</p>
+              <ul id="whyList" class="why"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 2: SPEED & TOKEN TELEMETRY -->
+        <div id="tab-telemetry" class="tab-pane">
+          <!-- SPEED PANEL -->
+          <div class="panel glass-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <h2>Speed (last reply)</h2>
+              </div>
+            </div>
+
+            <div class="speed-grid">
+              <div class="speed-card">
+                <div class="speed-icon-wrap ttft-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </div>
+                <div id="speedTtft" class="big">–</div>
+                <div class="label">ms to first answer token</div>
+              </div>
+
+              <div class="speed-card">
+                <div class="speed-icon-wrap total-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 14 10"/>
+                  </svg>
+                </div>
+                <div id="speedTotal" class="big">–</div>
+                <div class="label">seconds total</div>
+              </div>
+
+              <div class="speed-card">
+                <div class="speed-icon-wrap tps-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                </div>
+                <div id="speedTps" class="big">–</div>
+                <div class="label">tokens / second</div>
+              </div>
+            </div>
+            <p class="note">Web search and thinking both delay the first token — that is what they cost you in time.</p>
+          </div>
+
+          <!-- TOKEN USAGE PANEL -->
+          <div class="panel glass-panel">
+            <div class="panel-header">
+              <div class="panel-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                  <line x1="6" y1="6" x2="6.01" y2="6"/>
+                  <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                <h2>Token usage</h2>
+              </div>
+            </div>
+
+            <div class="usage-card-container">
+              <table class="usage">
+                <tr>
+                  <td>
+                    <span class="usage-dot input-dot"></span>
+                    <span>Input tokens</span>
+                  </td>
+                  <td id="useInput" class="num">–</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="usage-dot reasoning-dot"></span>
+                    <span>Reasoning tokens</span>
+                  </td>
+                  <td id="useReasoning" class="num">–</td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="usage-dot output-dot"></span>
+                    <span>Output tokens</span>
+                  </td>
+                  <td id="useOutput" class="num">–</td>
+                </tr>
+                <tr class="total-row">
+                  <td>
+                    <span class="usage-dot total-dot"></span>
+                    <b>Total</b>
+                  </td>
+                  <td id="useTotal" class="num">–</td>
+                </tr>
+                <tr class="rate-limit-row">
+                  <td>
+                    <div>Tokens left this minute</div>
+                    <span id="useReset" class="small-grey"></span>
+                  </td>
+                  <td id="useLeft" class="num">–</td>
+                </tr>
+              </table>
+            </div>
+
+            <p class="note">Input grows every turn because the entire conversation is re-sent on each request — the API remembers nothing.</p>
+            <p class="note">Every API call in production runs against a quota like this one. Watching it drain is the lesson.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ===================== VIEW CODE MODAL POP-UP ===================== -->
+  <div id="codeModal" class="modal" hidden>
+    <div class="modal-backdrop"></div>
+    <div class="modal-box">
+      <div class="modal-top-bar">
+        <div class="window-controls">
+          <span class="win-dot close"></span>
+          <span class="win-dot min"></span>
+          <span class="win-dot max"></span>
+        </div>
+        <div class="modal-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+          <h3>This request as code</h3>
+        </div>
+        <button id="closeCode" class="glass-btn small close-modal-btn">✕</button>
+      </div>
+
+      <div class="modal-body-scroll">
+        <p class="note modal-intro">Built from the current sliders, conversation and the text in the prompt box. The key is never printed — set the GROQ_API_KEY environment variable before running these.</p>
+
+        <!-- Code Snippet Tabs -->
+        <div class="code-section">
+          <div class="code-head">
+            <div class="code-label">
+              <span class="lang-badge">cURL</span>
+              <span>Direct HTTP Streaming Call</span>
+            </div>
+            <button class="glass-btn small" data-copy-target="curlCode">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+          <div class="code-pre-wrapper">
+            <pre id="curlCode"></pre>
+          </div>
+        </div>
+
+        <div class="code-section">
+          <div class="code-head">
+            <div class="code-label">
+              <span class="lang-badge python">Python</span>
+              <span>OpenAI SDK configured for Groq</span>
+            </div>
+            <button class="glass-btn small" data-copy-target="pythonCode">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+          </div>
+          <div class="code-pre-wrapper">
+            <pre id="pythonCode"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
