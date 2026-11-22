@@ -21,19 +21,6 @@ const PREFERRED_DEFAULT_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-insta
 // The models endpoint also lists speech and safety-filter models. Hide them.
 const NON_CHAT_MODEL_PATTERN = /whisper|tts|orpheus|playai|prompt-guard|llama-guard/i;
 
-const DEFAULT_PROMPT = [
-  "Extract the entity, primary sector, and valuation from each tech announcement.",
-  "",
-  "Input: Stripe secured $600M financing at a $95B valuation to scale enterprise financial infrastructure.",
-  "Output: {\"entity\": \"Stripe\", \"sector\": \"FinTech\", \"valuation\": \"$95B\"}",
-  "",
-  "Input: Mistral AI finalized a €600M Series B round valuing the European model provider at €5.8B.",
-  "Output: {\"entity\": \"Mistral AI\", \"sector\": \"Artificial Intelligence\", \"valuation\": \"€5.8B\"}",
-  "",
-  "Input: Databricks closed a $500M series I funding round at an estimated $43B valuation.",
-  "Output:",
-].join("\n");
-
 /* ==================================================================
    2. CAPABILITY MAP
    WHAT THIS DOES: records what each model family can do, so we never
@@ -411,9 +398,10 @@ function autoResizePrompt() {
   const p = $("prompt");
   if (!p) return;
   p.style.height = "auto";
-  const newHeight = Math.min(Math.max(p.scrollHeight, 70), 400);
+  const maxHeight = 190; // About eight lines at the prompt's current line height.
+  const newHeight = Math.min(Math.max(p.scrollHeight, 38), maxHeight);
   p.style.height = newHeight + "px";
-  p.style.overflowY = p.scrollHeight > 400 ? "auto" : "hidden";
+  p.style.overflowY = p.scrollHeight > maxHeight ? "auto" : "hidden";
 }
 
 let analysisTimer = null;
@@ -1381,10 +1369,9 @@ if (popover) {
 
 /* ==================================================================
    19. START-UP
-   WHAT THIS DOES: fills the prompt box, restores a remembered key,
+   WHAT THIS DOES: restores a remembered key,
    loads models if we have a key, and runs the first prompt analysis.
    ================================================================== */
-$("prompt").value = DEFAULT_PROMPT;
 autoResizePrompt();
 restoreKey();
 fillModelDropdown(FALLBACK_MODELS, true);

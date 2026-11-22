@@ -1301,15 +1301,15 @@ kbd {
 
 .textarea-wrapper textarea#prompt {
   width: 100%;
-  min-height: 70px;
-  max-height: 400px;
+  min-height: 38px;
+  max-height: 190px;
   background: transparent;
   border: none;
   color: #fff;
   font-family: var(--font-sans);
   font-size: 14px;
   line-height: 1.55;
-  padding: 6px 0;
+  padding: 8px 10px;
   resize: none;
   overflow-y: hidden;
   box-sizing: border-box;
