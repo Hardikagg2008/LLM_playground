@@ -710,6 +710,8 @@ function forgetUnansweredQuestion() {
    WHAT THIS DOES: creates and updates the HTML for each message.
    ================================================================== */
 function addUserBubble(text) {
+  const welcome = $("welcomeDeck");
+  if (welcome) welcome.style.display = "none";
   const el = document.createElement("div");
   el.className = "msg user";
   el.textContent = text;
@@ -1071,13 +1073,72 @@ $("resetBtn").addEventListener("click", () => {
   lastSentPrompt = "";
   renderPromptAnalysis();
   $("transcript").innerHTML = "";
+  const welcome = $("welcomeDeck");
+  if (welcome) {
+    welcome.style.display = "flex";
+    $("transcript").append(welcome);
+  }
   addNotice("Conversation reset — the next request starts from scratch.");
   resetInsightPanels();
+  const modeLabel = $("currentModeLabel");
+  if (modeLabel) modeLabel.textContent = "Custom Mode";
 });
 
+// Clear Chat action button
+const clearChatBtn = $("clearChatBtn");
+if (clearChatBtn) {
+  clearChatBtn.addEventListener("click", () => {
+    $("resetBtn").click();
+  });
+}
+
 /* ==================================================================
-   18. UI ENHANCEMENTS (TABS, PASSWORD TOGGLE, PRESET TEMPLATES)
+   18. UI ENHANCEMENTS (DROPDOWN SETTINGS, MODES, INFO POPOVERS, DRAWER)
    ================================================================== */
+// Settings & API Key Dropdown Menu
+const settingsToggle = $("settingsDropdownToggle");
+const settingsMenu = $("settingsDropdownMenu");
+const closeSettings = $("closeSettingsDropdown");
+
+if (settingsToggle && settingsMenu) {
+  settingsToggle.addEventListener("click", e => {
+    e.stopPropagation();
+    const isHidden = settingsMenu.hidden;
+    settingsMenu.hidden = !isHidden;
+    settingsToggle.setAttribute("aria-expanded", String(isHidden));
+  });
+
+  if (closeSettings) {
+    closeSettings.addEventListener("click", () => {
+      settingsMenu.hidden = true;
+      settingsToggle.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  document.addEventListener("click", e => {
+    if (!settingsMenu.hidden && !settingsMenu.contains(e.target) && e.target !== settingsToggle && !settingsToggle.contains(e.target)) {
+      settingsMenu.hidden = true;
+      settingsToggle.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+// Telemetry Drawer Toggle
+const toggleTelemetryBtn = $("toggleTelemetryBtn");
+const telemetryDrawer = $("telemetryDrawer");
+const closeTelemetryDrawer = $("closeTelemetryDrawer");
+
+if (toggleTelemetryBtn && telemetryDrawer) {
+  toggleTelemetryBtn.addEventListener("click", () => {
+    telemetryDrawer.hidden = !telemetryDrawer.hidden;
+  });
+  if (closeTelemetryDrawer) {
+    closeTelemetryDrawer.addEventListener("click", () => {
+      telemetryDrawer.hidden = true;
+    });
+  }
+}
+
 // API Key visibility toggle
 const toggleKeyBtn = $("toggleKeyVisibility");
 if (toggleKeyBtn) {
@@ -1094,59 +1155,178 @@ if (toggleKeyBtn) {
   });
 }
 
-// Telemetry Tab Switcher
-document.querySelectorAll(".telemetry-tabs .tab-btn").forEach(tab => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".telemetry-tabs .tab-btn").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".telemetry-content .tab-pane").forEach(p => p.classList.remove("active"));
-    tab.classList.add("active");
-    const targetId = tab.dataset.tab;
-    const targetPane = $(targetId);
-    if (targetPane) targetPane.classList.add("active");
-  });
-});
-
-// Prompt Preset Templates
-const PRESET_TEMPLATES = {
-  ner: DEFAULT_PROMPT,
-  architecture: [
-    "You are an elite Principal Cloud Architect.",
-    "Evaluate event-driven pub/sub versus streaming RPC architectures for low-latency financial order routing.",
-    "Provide technical trade-offs with concise bullet points.",
-    "Do not include generic introductions. Avoid superficial summaries."
-  ].join("\n"),
-  reasoning: [
-    "Solve the following service dependency sequence puzzle step by step.",
-    "Let's think step by step to determine the deterministic order:",
-    "",
-    "Constraints:",
-    "1. Service Auth must deploy before Ingestion and Cache.",
-    "2. Ingestion must deploy before Analytics.",
-    "3. Gateway can only deploy after Cache and Analytics are fully healthy.",
-    "4. Database must deploy before Auth.",
-    "",
-    "Question: What is the exact deployment sequence from first to last?"
-  ].join("\n"),
-  schema: [
-    "Parse the following server alert payload into strict JSON schema.",
-    "Format: Return only valid JSON with keys \"severity\", \"service\", \"latency_p99_ms\", and \"actionRequired\".",
-    "Never add conversational filler or markdown notes.",
-    "",
-    "Alert Log: [CRITICAL] 2026-11-22T21:40:02Z - postgres-primary replication lag exceeded 450ms. Threshold 100ms breached.",
-    "",
-    "Output:"
-  ].join("\n")
+// Starter Conversation Modes & Presets
+const CONVERSATION_MODES = {
+  creative: {
+    label: "Creative Exploration Mode",
+    temp: 1.2,
+    tokens: 600,
+    reasoning: false,
+    prompt: [
+      "Let's explore high-concept creative synthesis.",
+      "Topic: Imagine a civilization that builds orbital computing habitats powered entirely by solar flares.",
+      "Describe their architecture, computational paradigm, and societal philosophy.",
+      "Write with vivid literary depth and unexpected metaphors."
+    ].join("\n")
+  },
+  practical: {
+    label: "Practical & Business Mode",
+    temp: 0.6,
+    tokens: 400,
+    reasoning: false,
+    prompt: [
+      "Provide an executive briefing and strategic decision matrix on migrating from self-hosted Kafka clusters to a managed event streaming architecture.",
+      "Structure your response with:",
+      "1. TCO & Operational Overhead Analysis",
+      "2. Reliability & SLA Guarantees",
+      "3. Clear Recommendation with Risk Mitigation Steps"
+    ].join("\n")
+  },
+  mathematical: {
+    label: "Mathematical & Logic Mode",
+    temp: 0.1,
+    tokens: 800,
+    reasoning: true,
+    prompt: [
+      "Solve this formal probability and logic puzzle step by step.",
+      "Let's think step by step to prove the exact distribution:",
+      "",
+      "Problem: A bag contains 3 red balls and 5 green balls. You draw balls one by one without replacement until a red ball is drawn. What is the expected number of green balls drawn before the first red ball?",
+      "",
+      "Derive the solution mathematically with clear steps."
+    ].join("\n")
+  },
+  engineering: {
+    label: "Systems & Architecture Mode",
+    temp: 0.2,
+    tokens: 700,
+    reasoning: true,
+    prompt: [
+      "You are a Principal Distributed Systems Engineer.",
+      "Refactor the following Python async event processor to eliminate race conditions and avoid unbounded queue memory growth.",
+      "Provide clean, production-grade asyncio code with backpressure mechanisms and type annotations.",
+      "Do not use generic high-level summaries."
+    ].join("\n")
+  }
 };
 
-document.querySelectorAll(".template-chip").forEach(chip => {
-  chip.addEventListener("click", () => {
-    const key = chip.dataset.template;
-    if (PRESET_TEMPLATES[key]) {
-      $("prompt").value = PRESET_TEMPLATES[key];
+document.querySelectorAll(".mode-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const modeKey = card.dataset.mode;
+    const mode = CONVERSATION_MODES[modeKey];
+    if (mode) {
+      $("tempRange").value = mode.temp;
+      $("tempBox").value = mode.temp;
+      $("maxRange").value = mode.tokens;
+      $("maxBox").value = mode.tokens;
+      updateSliderUI();
+
+      const caps = getCapabilities($("model").value);
+      if (caps.reasoning === "optional") {
+        $("reasoning").checked = mode.reasoning;
+        wantsReasoning = mode.reasoning;
+      }
+
+      $("prompt").value = mode.prompt;
       schedulePromptAnalysis();
+
+      const modeLabel = $("currentModeLabel");
+      if (modeLabel) modeLabel.textContent = mode.label;
+
+      $("prompt").focus();
     }
   });
 });
+
+// Circled (i) Info Popover Explanations
+const INFO_EXPLANATIONS = {
+  temperature: {
+    title: "Temperature (Sampling Randomness)",
+    text: "Controls randomness in token selection. Lower values (0.0 – 0.3) produce deterministic, highly focused answers ideal for code and math. Higher values (0.8 – 1.5) encourage creativity, unexpected metaphors, and diverse vocabulary."
+  },
+  maxTokens: {
+    title: "Max Completion Tokens",
+    text: "The hard ceiling on output generation length. On reasoning models, this budget includes hidden thinking tokens — setting this too low can result in the model spending all tokens thinking with none left for the final answer."
+  },
+  stopSeq: {
+    title: "Stop Sequences",
+    text: "Up to 4 custom string markers (e.g. 'Input:', '###') that instruct the model to immediately stop generating as soon as one of them appears in the output."
+  },
+  webSearch: {
+    title: "Live Web Search (Tool)",
+    text: "Allows the model to query external search engines to fetch up-to-date facts before writing. Incurs additional input token cost and latency."
+  },
+  reasoning: {
+    title: "Internal Reasoning (CoT)",
+    text: "Enables chain-of-thought thinking tokens before producing the final response. You can view the live thought stream in the collapsible Thinking drawer."
+  },
+  apiKey: {
+    title: "Groq API Authentication",
+    text: "Your personal Groq API key (starts with 'gsk_'). It is stored securely in your browser's sessionStorage and sent only in the Authorization header to api.groq.com."
+  },
+  shotLearning: {
+    title: "Prompt Engineering & Few-Shot",
+    text: "Zero-Shot: answering purely from model pre-training without worked examples. Few-Shot: providing one or more example (Input / Output) pairs in the prompt to condition the model's pattern and style."
+  },
+  ttft: {
+    title: "Time To First Token (TTFT)",
+    text: "Elapsed milliseconds from dispatching the HTTP request until the first completion token streams back to the browser. Web search and reasoning increase TTFT."
+  },
+  tps: {
+    title: "Tokens Per Second (TPS)",
+    text: "Generation throughput calculated from completion tokens divided by generation time. Groq LPU hardware typically delivers 200–500+ tokens/sec."
+  },
+  quota: {
+    title: "Token Quota & Rate Limits",
+    text: "Tracks your real-time tokens-per-minute quota reported in the 'x-ratelimit-remaining-tokens' API response header to prevent HTTP 429 rate limit errors."
+  },
+  telemetry: {
+    title: "Live Inference Telemetry",
+    text: "Real metrics reported directly by the Groq API server for latency, token economics, and streaming performance."
+  }
+};
+
+const popover = $("infoPopover");
+const popoverTitle = $("popoverTitle");
+const popoverContent = $("popoverContent");
+const closeInfoPopover = $("closeInfoPopover");
+
+if (popover) {
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".info-btn[data-info]");
+    if (btn) {
+      e.stopPropagation();
+      const infoKey = btn.dataset.info;
+      const data = INFO_EXPLANATIONS[infoKey];
+      if (data) {
+        popoverTitle.textContent = data.title;
+        popoverContent.textContent = data.text;
+        popover.hidden = false;
+
+        const rect = btn.getBoundingClientRect();
+        let left = rect.left - 130;
+        let top = rect.bottom + 8;
+        if (left < 10) left = 10;
+        if (left + 290 > window.innerWidth) left = window.innerWidth - 300;
+        if (top + 170 > window.innerHeight) top = rect.top - 160;
+
+        popover.style.left = left + "px";
+        popover.style.top = top + "px";
+      }
+      return;
+    }
+
+    if (!popover.hidden && !popover.contains(e.target)) {
+      popover.hidden = true;
+    }
+  });
+
+  if (closeInfoPopover) {
+    closeInfoPopover.addEventListener("click", () => {
+      popover.hidden = true;
+    });
+  }
+}
 
 /* ==================================================================
    19. START-UP
